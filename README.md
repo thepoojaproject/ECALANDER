@@ -3,66 +3,125 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Responsive Calendar</title>
+  <title>Minimal Retro Calendar</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+    body {
+      background-color: #f2e9de;
+      font-family: 'IBM Plex Mono', monospace;
+      color: #222;
+      letter-spacing: 0.5px;
+    }
+
+    .calendar-container {
+      background: #fffaf3;
+      border: 2px solid #222;
+      border-radius: 6px;
+      box-shadow: 4px 4px 0 #222;
+      padding: 1rem;
+      max-width: 360px;
+      margin: 2rem auto;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #222;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      background: none;
+      border: 1px solid #222;
+      font-size: 12px;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #222;
+      color: #fffaf3;
+    }
+
+    #monthYear {
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      font-size: 11px;
+      text-align: center;
+      font-weight: 600;
+      border-bottom: 1px dashed #888;
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+    }
+
     .day {
-      min-width: 44px;
-      min-height: 44px;
-      display: inline-flex;
+      min-width: 38px;
+      min-height: 38px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      margin: 3px;
-      border-radius: 8px;
+      margin: 1px;
+      border-radius: 4px;
       cursor: pointer;
-      transition: transform .12s ease, background-color .12s ease;
-      user-select: none;
+      border: 1px solid transparent;
+      transition: background-color 0.1s ease;
     }
-    .day:hover { transform: translateY(-3px); background-color: rgba(0,0,0,0.04); }
+
+    .day:hover {
+      background: #e9e1d0;
+    }
+
     .today {
-      background-color: #2563eb; /* Tailwind blue-600 */
-      color: white;
-      font-weight: 600;
-      box-shadow: 0 6px 18px rgba(37,99,235,0.18);
+      border: 1px solid #000;
+      background: #dcd3c2;
+      font-weight: bold;
     }
-    /* subtle disabled placeholders */
-    .empty { opacity: 0.12; pointer-events: none; height: 44px; border-radius: 8px; }
+
+    .empty {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: #555;
+      margin-top: 1rem;
+    }
   </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-center p-4">
-  <div class="w-full max-w-md">
-    <div class="bg-white rounded-2xl shadow-lg p-5">
-      <div class="flex items-center justify-between gap-2 mb-4">
-        <div class="flex items-center gap-2">
-          <button id="prevBtn" aria-label="Previous month" class="p-2 rounded-lg hover:bg-slate-100">
-            ◀
-          </button>
-        </div>
-
-        <div class="text-center">
-          <div id="monthYear" class="text-lg font-semibold"></div>
-          <div id="subtitle" class="text-xs text-gray-500">Current month & year shown here</div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button id="todayBtn" class="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm">Today</button>
-          <button id="nextBtn" aria-label="Next month" class="p-2 rounded-lg hover:bg-slate-100">
-            ▶
-          </button>
-        </div>
+<body>
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <button id="prevBtn">◀</button>
+      <div>
+        <div id="monthYear"></div>
       </div>
-
-      <div class="grid grid-cols-7 text-center font-medium text-sm text-slate-600 mb-2">
-        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-      </div>
-
-      <div id="calendarDays" class="grid grid-cols-7 gap-1 text-center"></div>
+      <button id="nextBtn">▶</button>
     </div>
 
-    <!-- Footer text -->
-    <p class="text-center text-sm text-gray-500 mt-3">
-      Made with ❤️ by <span class="font-semibold text-blue-600">Armeen</span>
-    </p>
+    <div class="weekdays">
+      <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+    </div>
+
+    <div id="calendarDays" class="grid grid-cols-7 gap-1 text-center"></div>
+
+    <div class="flex justify-center mt-3">
+      <button id="todayBtn">Today</button>
+    </div>
+
+    <p class="footer">Made in ❤️ By Armeen </p>
   </div>
 
   <script>
@@ -72,10 +131,8 @@
     const nextBtn = document.getElementById('nextBtn');
     const todayBtn = document.getElementById('todayBtn');
 
-    // activeDate is the month being displayed (day-of-month doesn't matter)
     let activeDate = new Date();
 
-    // normalize time to avoid timezone edge cases
     function normalize(d) {
       return new Date(d.getFullYear(), d.getMonth(), d.getDate());
     }
@@ -84,16 +141,13 @@
       const year = activeDate.getFullYear();
       const month = activeDate.getMonth();
 
-      // display "Month Year" like "September 2025"
       monthYear.innerText = activeDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-      // first day weekday (0=Sun..6=Sat) and last date of month
       const firstDayIndex = new Date(year, month, 1).getDay();
       const lastDate = new Date(year, month + 1, 0).getDate();
 
       calendarDays.innerHTML = '';
 
-      // add placeholders for days before the 1st
       for (let i = 0; i < firstDayIndex; i++) {
         const empty = document.createElement('div');
         empty.className = 'empty';
@@ -105,17 +159,13 @@
       for (let d = 1; d <= lastDate; d++) {
         const cell = document.createElement('div');
         cell.className = 'day';
-        cell.tabIndex = 0;
         cell.innerText = d;
-
         const cellDate = normalize(new Date(year, month, d));
 
         if (cellDate.getTime() === today.getTime()) {
           cell.classList.add('today');
-          cell.setAttribute('aria-current', 'date');
         }
 
-        // click handler
         cell.addEventListener('click', () => {
           alert(`Selected: ${cellDate.toLocaleDateString()}`);
         });
@@ -139,13 +189,11 @@
       renderCalendar();
     });
 
-    // keyboard navigation
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') { activeDate.setMonth(activeDate.getMonth() - 1); renderCalendar(); }
       if (e.key === 'ArrowRight') { activeDate.setMonth(activeDate.getMonth() + 1); renderCalendar(); }
     });
 
-    // initial render
     renderCalendar();
   </script>
 </body>
